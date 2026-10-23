@@ -1,6 +1,6 @@
 # Publish to the Gas City registry
 
-The first release is `tavily-fde/tavily` version `0.1.0`. The repository owner
+The current release is `tavily-fde/tavily` version `0.1.1`. The repository owner
 is `Tavily-FDE`; Gas City requires the pack scope to match its lowercase form.
 Keep the scoped name in `pack.toml` identical to the submitted name.
 
@@ -16,6 +16,8 @@ Keep the scoped name in `pack.toml` identical to the submitted name.
    live tools.
 5. Commit and push all release files. For the browser flow, merge them into
    the repository's default branch before scanning.
+6. Tag the release commit `v<version>` (for example `v0.1.1`) and push the tag,
+   so `gc import add --version '^0.1.1'` can resolve it.
 
 ## Submit through GitHub App discovery
 
@@ -35,7 +37,7 @@ Keep the scoped name in `pack.toml` identical to the submitted name.
    | Repository | `Tavily-FDE/tavily-gascity-pack` |
    | Pack path | `.` |
    | Pack name | `tavily-fde/tavily` |
-   | Version | `0.1.0` |
+   | Version | `0.1.1` |
    | Ref label | The default branch, normally `main` |
 
 5. Click **Submit this pack** and follow the request on the Account page.

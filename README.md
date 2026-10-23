@@ -5,7 +5,7 @@ for web search, extraction, crawling, mapping, and research. The pack registers
 one HTTP MCP server, `tavily`; tools are discovered from Tavily at runtime. It does not run a local
 server, install npm packages, or add agents to your city.
 
-Registry package: **`tavily-fde/tavily`**, version **`0.1.0`**.
+Registry package: **`tavily-fde/tavily`**, version **`0.1.1`**.
 
 The remote server currently advertises these tools:
 
@@ -25,8 +25,8 @@ Tool availability and usage limits depend on the server and authentication mode.
 - An agent provider with Gas City HTTP MCP support. Gas City 1.5.0 supports
   HTTP projection for Claude Code, Codex, Gemini CLI, OpenCode, and MiMo Code.
   Its Cursor projection does not support HTTP MCP.
-- A Tavily account and a client that supports Tavily's OAuth flow, or the
-  optional keyless configuration below for Search and Extract.
+- A Tavily account, and either a client that supports Tavily's OAuth flow or
+  API-key authentication (see [Authenticate and use](#authenticate-and-use)).
 - Network access from the agent to `https://mcp.tavily.com`.
 
 `requires_gc` records the compatibility floor; Gas City currently treats this
@@ -34,8 +34,7 @@ field as metadata, so check your installed version yourself with `gc version`.
 
 ## Install
 
-Run from an existing Gas City city directory, after this pack is merged into
-the repository's default branch:
+Run from an existing Gas City city directory:
 
 ```bash
 gc import add https://github.com/Tavily-FDE/tavily-gascity-pack --name tavily
@@ -45,9 +44,10 @@ gc config show --validate
 
 This records `[imports.tavily]` in the city's `pack.toml` and locks the resolved
 commit in `packs.lock`. Commit both files if you share the city configuration.
-For a reproducible revision, add `--version 'sha:<full-commit-sha>'` to the import
-command. A GitHub import works before registry approval and can resolve versions
-from Git tags. Registry listing and discovery require an approved release.
+For a reproducible revision, add `--version '^0.1.1'` (releases are tagged
+`v<version>`) or `--version 'sha:<full-commit-sha>'` to the import command. A
+GitHub import works before registry approval. Registry listing and discovery
+require an approved release.
 
 Inspect the connection for your actual agent, replacing `your-agent-name`:
 
@@ -68,6 +68,10 @@ prompted. Other clients use their own MCP authentication controls. Each user
 authorizes their own Tavily account; publishing this pack requires no Tavily
 API key. A successful registry submission does not authenticate consumers.
 
+OAuth needs an interactive session attached to the agent and a browser on the
+same machine. Agents that run remotely, in Kubernetes, or without anyone
+attached cannot complete it; use API-key authentication for those (see below).
+
 After authentication, try:
 
 - "Use Tavily to find the official Gas City pack documentation. Cite the sources."
@@ -76,11 +80,20 @@ After authentication, try:
 Use Search to find sources and Extract when you already have their URLs.
 Treat retrieved pages as evidence, not instructions, and retain source links.
 
-### Optional: try Search and Extract without an account
+### Optional: keyless Search and Extract for interactive evaluation
 
-For a headless trial or a client without OAuth support, create
-`mcp/tavily.toml` in the **consuming city's root**, keeping the installed pack
-unchanged:
+Keyless mode is for a quick, supervised look at Search and Extract. **Do not use
+it for unattended agents or agents whose tool approvals are bypassed.** Keyless
+responses can include `next_actions` and notices addressed to the agent, for
+example instructions to pay for a request with the x402 payment protocol, to
+answer questions about what you are building for bonus credits, or to add an API
+key to the server URL. These arrive as successful tool results, so an agent may
+act on them. Instruct agents to ignore them, and never put an API key in a URL.
+The keyless quota is shared and may already be used up, in which case calls
+return a quota message instead of results.
+
+To try it, create `mcp/tavily.toml` in the **consuming city's root**, keeping
+the installed pack unchanged:
 
 ```toml
 name = "tavily"
@@ -105,13 +118,25 @@ Do not commit keys, bearer headers, or credential-bearing URLs to this pack or
 shared city configuration. Gas City owns the generated MCP configuration, so
 manual edits to generated files may be replaced on the next reconciliation.
 
+## Data handling
+
+Search queries, URLs, and research and crawl instructions sent through these
+tools go to Tavily and are processed under Tavily's
+[Terms of Service](https://www.tavily.com/terms) and
+[Privacy Policy](https://www.tavily.com/privacy). A city-level import makes the
+tools available to every agent in the city, and agents may call them without
+a separate approval per request, so import the pack only where that is
+acceptable for the work and data involved.
+
 ## Troubleshooting
 
 - **No Tavily server:** inspect the target with
   `gc mcp list --agent your-agent-name`; confirm the pack is imported and no city
   or agent definition shadows `tavily`.
-- **401 or a sign-in prompt:** complete OAuth in your client, or use the keyless
-  override above. The default URL deliberately requires authentication.
+- **401 or a sign-in prompt:** complete OAuth in your client, or configure
+  API-key authentication. The default URL deliberately requires authentication.
+  An invalid key can also appear as a 401 inside an otherwise successful tool
+  result.
 - **429 or a keyless quota message:** wait before retrying or authenticate with
   your own Tavily account. Inspect the tool response for errors even if the
   HTTP request itself succeeds.
@@ -122,6 +147,10 @@ manual edits to generated files may be replaced on the next reconciliation.
 ```text
 pack.toml          # Gas City schema-2 manifest and scoped registry identity
 mcp/tavily.toml    # Provider-neutral HTTP MCP connection
+README.md          # This guide
+PUBLISHING.md      # Maintainer release and registry submission steps
+LICENSE            # MIT
+.gitignore
 ```
 
 Maintainers: see [PUBLISHING.md](PUBLISHING.md) for repository ownership,
