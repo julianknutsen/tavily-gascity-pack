@@ -44,10 +44,10 @@ gc config show --validate
 
 This records `[imports.tavily]` in the city's `pack.toml` and locks the resolved
 commit in `packs.lock`. Commit both files if you share the city configuration.
-For a reproducible revision, add `--version '^0.1.1'` (releases are tagged
-`v<version>`) or `--version 'sha:<full-commit-sha>'` to the import command. A
-GitHub import works before registry approval. Registry listing and discovery
-require an approved release.
+To select a compatible release, add `--version '^0.1.1'` (releases are tagged
+`v<version>`). To pin an exact commit directly, use
+`--version 'sha:<full-commit-sha>'`. A GitHub import works before registry
+approval. Registry listing and discovery require an approved release.
 
 Inspect the connection for your actual agent, replacing `your-agent-name`:
 
@@ -68,9 +68,12 @@ prompted. Other clients use their own MCP authentication controls. Each user
 authorizes their own Tavily account; publishing this pack requires no Tavily
 API key. A successful registry submission does not authenticate consumers.
 
-OAuth needs an interactive session attached to the agent and a browser on the
-same machine. Agents that run remotely, in Kubernetes, or without anyone
-attached cannot complete it; use API-key authentication for those (see below).
+OAuth requires an initial interactive authorization step. Remote agents can
+use their client's supported remote sign-in flow; for example,
+[Claude Code supports signing in over SSH](https://code.claude.com/docs/en/mcp#authenticate-from-the-command-line)
+using a browser on another machine. For unattended deployments, authorize the
+client beforehand and persist its credentials securely, or use API-key
+authentication (see below).
 
 After authentication, try:
 
